@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quran Sipara Reading Tracker</title>
+  <style>
+    :root {
+      --bg-page: #131314;
+      --bg-surface: #1e1f20;
+      --bg-card: #282a2c;
+      --bg-card-hover: #313437;
+      --bg-input: #2b2d30;
+      --border: #3c4043;
+      --text-primary: #e3e3e3;
+      --text-secondary: #9aa0a6;
+      --blue-btn: #2563eb;
+      --blue-btn-hover: #1d4ed8;
+      --blue-accent: #8ab4f8;
+      --green-text: #81c995;
+      --green-bg: rgba(129, 201, 149, 0.14);
+      --amber-text: #fdd663;
+      --amber-bg: rgba(253, 214, 99, 0.14);
+      --blue-status: #8ab4f8;
+      --blue-status-bg: rgba(138, 180, 248, 0.14);
+      --red-text: #f28b82;
+      --red-btn: #b3261e;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-primary);
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .app-container {
+      width: 100%;
+      max-width: 720px;
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+    }
+
+    /* Header */
+    .header {
+      margin-bottom: 18px;
+    }
+
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+    }
+
+    .title-icon {
+      font-size: 1.45rem;
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .subtitle {
+      font-size: 0.88rem;
+      line-height: 1.45;
+      color: var(--text-secondary);
+    }
+
+    /* Top Action Pills */
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.86rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background-color 0.15s ease, border-color 0.15s ease;
+    }
+
+    .pill-btn:hover {
+      background-color: var(--bg-card-hover);
+      border-color: #5f6368;
+    }
+
+    .pill-btn.active {
+      border-color: var(--blue-accent);
+      background-color: rgba(138, 180, 248, 0.12);
+    }
+
+    /* Metrics Bar */
+    .metrics-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 14px 8px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 18px;
+      text-align: center;
+    }
+
+    .metric-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .metric-label {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .metric-value {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .metric-available { color: var(--green-text); }
+    .metric-reading { color: var(--amber-text); }
+    .metric-completed { color: var(--blue-status); }
+    .metric-full { color: var(--blue-status); }
+
+    /* Panel Sections */
+    .panel-box {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 10px;
+    }
+
+    .field-label .req {
+      color: var(--red-text);
+    }
+
+    .text-input {
+      width: 100%;
+      background-color: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      color: #ffffff;
+      font-size: 0.92rem;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .text-input::placeholder {
+      color: var(--text-secondary);
+    }
+
+    .text-input:focus {
+      border-color: var(--blue-accent);
+      box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+    }
+
+    .text-input.error {
+      border-color: var(--red-text);
+      box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.25);
+    }
+
+    .claim-full-btn {
+      width: 100%;
+      margin-top: 12px;
+      background-color: var(--blue-btn);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background-color 0.15s ease;
+    }
+
+    .claim-full-btn:hover {
+      background-color: var(--blue-btn-hover);
+    }
+
+    /* Admin Panel */
+    .admin-box {
+      display: none;
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 18px;
+      margin-bottom: 16px;
+    }
+
+    .admin-box.visible {
+      display: block;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+    }
+
+    .verify-btn-wrap {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .verify-btn {
+      background-color: var(--blue-btn);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 28px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.15s ease;
+    }
+
+    .verify-btn:hover {
+      background-color: var(--blue-btn-hover);
+    }
+
+    .admin-controls {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 4px;
+    }
+
+    .admin-controls.unlocked {
+      display: flex;
+    }
+
+    .admin-badge-verified {
+      text-align: center;
+      font-size: 0.85rem;
+      color: var(--green-text);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .admin-btn-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .btn-excel {
+      background-color: #1e8e3e;
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-reset {
+      background-color: var(--red-btn);
+      color: #ffffff;
+      border: none;
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-lock {
+      background-color: var(--bg-input);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 18px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Status Toast */
+    .status-banner {
+      display: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+      background-color: rgba(138, 180, 248, 0.14);
+      border: 1px solid rgba(138, 180, 248, 0.35);
+      color: var(--blue-status);
+    }
+
+    .status-banner.error {
+      background-color: rgba(242, 139, 130, 0.14);
+      border-color: rgba(242, 139, 130, 0.35);
+      color: var(--red-text);
+    }
+
+    .status-banner.success {
+      background-color: rgba(129, 201, 149, 0.14);
+      border-color: rgba(129, 201, 149, 0.35);
+      color: var(--green-text);
+    }
+
+    /* Juz Grid */
+    .juz-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (min-width: 600px) {
+      .juz-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .juz-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.15s ease, background-color 0.15s ease;
+      user-select: none;
+      min-height: 118px;
+    }
+
+    .juz-card:hover:not(.status-completed) {
+      background-color: var(--bg-card-hover);
+      border-color: #5f6368;
+    }
+
+    .juz-card.status-reading {
+      border-color: rgba(253, 214, 99, 0.5);
+      background-color: rgba(253, 214, 99, 0.06);
+    }
+
+    .juz-card.status-completed {
+      border-color: rgba(138, 180, 248, 0.35);
+      background-color: rgba(32, 33, 36, 0.85);
+      cursor: not-allowed;
+      opacity: 0.82;
+    }
+
+    .juz-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .juz-pill {
+      background-color: #35373a;
+      color: var(--text-secondary);
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .juz-arabic {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--blue-accent);
+      direction: rtl;
+    }
+
+    .juz-name {
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 12px;
+    }
+
+    .juz-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .status-chip {
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 8px;
+      display: inline-block;
+    }
+
+    .chip-available {
+      background-color: var(--green-bg);
+      color: var(--green-text);
+    }
+
+    .chip-reading {
+      background-color: var(--amber-bg);
+      color: var(--amber-text);
+    }
+
+    .chip-completed {
+      background-color: var(--blue-status-bg);
+      color: var(--blue-status);
+    }
+
+    .reader-tag {
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      max-width: 90px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <div class="header">
+      <div class="title-row">
+        <span class="title-icon">📚</span>
+        <h1>Quran Sipara Reading Tracker</h1>
+      </div>
+      <p class="subtitle">
+        Single-round lock tracker with compulsory verification &amp; automatic Full Quran completion metrics
+      </p>
+    </div>
+
+    <!-- Top Action Buttons -->
+    <div class="top-actions">
+      <button type="button" id="shareLinkBtn" class="pill-btn">
+        <span>🔗</span> Share link
+      </button>
+      <button type="button" id="adminToggleBtn" class="pill-btn">
+        <span>🛡️</span> Admin view
+      </button>
+    </div>
+
+    <!-- Metrics Summary -->
+    <div class="metrics-bar">
+      <div class="metric-item">
+        <span class="metric-label">Available</span>
+        <span id="metricAvailable" class="metric-value metric-available">30 / 30</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Being Read</span>
+        <span id="metricReading" class="metric-value metric-reading">0</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Completed</span>
+        <span id="metricCompleted" class="metric-value metric-completed">0</span>
+      </div>
+      <div class="metric-item">
+        <span class="metric-label">Full Quran R...</span>
+        <span id="metricFullQuran" class="metric-value metric-full">★ 0</span>
+      </div>
+    </div>
+
+    <!-- Reader Name Validation Card -->
+    <div class="panel-box">
+      <label for="readerNameInput" class="field-label">
+        Reader name validation <span class="req">*</span>
+      </label>
+      <input
+        type="text"
+        id="readerNameInput"
+        class="text-input"
+        placeholder="Enter full name to select or lock Sipara"
+        autocomplete="off"
+      />
+      <button type="button" id="claimFullBtn" class="claim-full-btn">
+        <span>🏅</span> Claim entire 30 Siparas (Full Quran)
+      </button>
+    </div>
+
+    <!-- Unlock Admin Mode Card -->
+    <div id="adminPanel" class="admin-box visible">
+      <div id="adminLoginSection">
+        <div class="admin-header">
+          <span>🔒</span> Unlock Admin Mode:
+        </div>
+        <input
+          type="password"
+          id="adminPasswordInput"
+          class="text-input"
+          placeholder="Enter password"
+          autocomplete="off"
+        />
+        <div class="verify-btn-wrap">
+          <button type="button" id="verifyPasswordBtn" class="verify-btn">Verify</button>
+        </div>
+      </div>
+
+      <div id="adminControlsSection" class="admin-controls">
+        <div class="admin-badge-verified">✓ Admin Mode Unlocked</div>
+        <div class="admin-btn-row">
+          <button type="button" id="downloadExcelBtn" class="btn-excel">Download Excel (.xls)</button>
+          <button type="button" id="resetTrackerBtn" class="btn-reset">Reset Tracker</button>
+          <button type="button" id="lockAdminBtn" class="btn-lock">Lock</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Notification -->
+    <div id="statusBanner" class="status-banner"></div>
+
+    <!-- 30 Juz Cards Grid -->
+    <div id="juzGrid" class="juz-grid"></div>
+  </div>
+
+  <script>
+    const ADMIN_KEY = "Qaz@1234";
+
+    const JUZ_DATA = [
+      { num: 1, name: "Alif Lam Meem", arabic: "الم" },
+      { num: 2, name: "Sayaqool", arabic: "سيقول" },
+      { num: 3, name: "Tilkal Rusul", arabic: "تلك الرسل" },
+      { num: 4, name: "Lan Tanaloo", arabic: "لن تنالوا" },
+      { num: 5, name: "Wal Mohsanat", arabic: "والمحصنات" },
+      { num: 6, name: "La Yuhibbullah", arabic: "لا يحب الله" },
+      { num: 7, name: "Wa Iza Samiu", arabic: "وإذا سمعوا" },
+      { num: 8, name: "Wa Lau Annana", arabic: "ولو أننا" },
+      { num: 9, name: "Qalal Malao", arabic: "قال الملأ" },
+      { num: 10, name: "Wa A'lamu", arabic: "واعلموا" },
+      { num: 11, name: "Yatazeroon", arabic: "يعتذرون" },
+      { num: 12, name: "Wa Mamin Da'abat", arabic: "وما من دابة" },
+      { num: 13, name: "Wa Ma Ubrioo", arabic: "وما أبرئ" },
+      { num: 14, name: "Rubama", arabic: "ربما" },
+      { num: 15, name: "Subhanallazi", arabic: "سبحان الذي" },
+      { num: 16, name: "Qal Alam", arabic: "قال ألم" },
+      { num: 17, name: "Aqtarabo", arabic: "اقترب" },
+      { num: 18, name: "Qadd Aflaha", arabic: "قد أفلح" },
+      { num: 19, name: "Wa Qalallazina", arabic: "وقال الذين" },
+      { num: 20, name: "A'man Khalaq", arabic: "أمن خلق" },
+      { num: 21, name: "Utlu Ma Oohi", arabic: "اتل ما أوحي" },
+      { num: 22, name: "Wa Manyaqnut", arabic: "ومن يقنت" },
+      { num: 23, name: "Wa Mali", arabic: "وما لي" },
+      { num: 24, name: "Faman Azlam", arabic: "فمن أظلم" },
+      { num: 25, name: "Elahe Yuruddo", arabic: "إليه يرد" },
+      { num: 26, name: "Ha'a Meem", arabic: "حم" },
+      { num: 27, name: "Qala Fama Khatbukum", arabic: "قال فما خطبكم" },
+      { num: 28, name: "Qadd Sami Allah", arabic: "قد سمع الله" },
+      { num: 29, name: "Tabarakallazi", arabic: "تبارك الذي" },
+      { num: 30, name: "Amma Yatasa'aloon", arabic: "عم يتساءلون" }
+    ];
+
+    // State structure:
+    // roundState: { [1..30]: { status: 'available' | 'reading' | 'completed', reader: string } }
+    // fullQuranCount: number
+    // logs: Array<{ entry, reader, chapter, status, timestamp }>
+    let state = {
+      roundState: {},
+      fullQuranCount: 0,
+      logs: []
+    };
+
+    let isAdminUnlocked = false;
+    let confirmResetPending = false;
+
+    function initDefaultRoundState() {
+      const obj = {};
+      for (let i = 1; i <= 30; i++) {
+        obj[i] = { status: "available", reader: "" };
+      }
+      return obj;
+    }
+
+    function loadState() {
+      try {
+        if (window.location.hash.startsWith("#data=")) {
+          const decoded = JSON.parse(decodeURIComponent(atob(window.location.hash.slice(6))));
+          if (decoded && decoded.roundState) {
+            state = decoded;
+            saveState();
+            return;
+          }
+        }
+        const saved = localStorage.getItem("quran_juz_tracker_v3");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.roundState) {
+            state = parsed;
+            return;
+          }
+        }
+      } catch (e) {}
+      state.roundState = initDefaultRoundState();
+      state.fullQuranCount = 0;
+      state.logs = [];
+    }
+
+    function saveState() {
+      localStorage.setItem("quran_juz_tracker_v3", JSON.stringify(state));
+    }
+
+    function showStatus(msg, type = "info") {
+      const banner = document.getElementById("statusBanner");
+      banner.textContent = msg;
+      banner.className = "status-banner " + type;
+      banner.style.display = "block";
+    }
+
+    function getValidatedReaderName() {
+      const input = document.getElementById("readerNameInput");
+      const name = input.value.trim();
+      if (!name) {
+        input.classList.add("error");
+        input.focus();
+        showStatus("Reader name is compulsory before selecting, locking, or completing any Sipara.", "error");
+        return null;
+      }
+      input.classList.remove("error");
+      return name;
+    }
+
+    function checkRoundCompletion(lastReaderName) {
+      let completedCount = 0;
+      for (let i = 1; i <= 30; i++) {
+        if (state.roundState[i] && state.roundState[i].status === "completed") {
+          completedCount++;
+        }
+      }
+
+      if (completedCount === 30) {
+        state.fullQuranCount += 1;
+        state.logs.push({
+          reader: lastReaderName,
+          chapter: "Full Quran (All 30 Siparas Completed)",
+          status: "Completed",
+          timestamp: new Date().toLocaleString()
+        });
+        state.roundState = initDefaultRoundState();
+        saveState();
+        renderUI();
+        showStatus("MashaAllah! All 30 Siparas completed! Full Quran counter increased by 1 and a new round is now unlocked.", "success");
+        return true;
+      }
+      return false;
+    }
+
+    function handleJuzClick(juzNum) {
+      const current = state.roundState[juzNum] || { status: "available", reader: "" };
+
+      if (current.status === "completed") {
+        showStatus(`Juz ${juzNum} is already completed and locked until all 30 Siparas finish.`, "error");
+        return;
+      }
+
+      const readerName = getValidatedReaderName();
+      if (!readerName) return;
+
+      const juzInfo = JUZ_DATA.find(j => j.num === juzNum);
+      const now = new Date().toLocaleString();
+
+      if (current.status === "available") {
+        state.roundState[juzNum] = { status: "reading", reader: readerName };
+        state.logs.push({
+          reader: readerName,
+          chapter: `Juz ${juzNum} - ${juzInfo.name}`,
+          status: "Being Read (Locked)",
+          timestamp: now
+        });
+        saveState();
+        renderUI();
+        showStatus(`Juz ${juzNum} (${juzInfo.name}) locked as Being Read by ${readerName}. Click it again to mark Completed.`, "info");
+      } else if (current.status === "reading") {
+        state.roundState[juzNum] = { status: "completed", reader: readerName };
+        state.logs.push({
+          reader: readerName,
+          chapter: `Juz ${juzNum} - ${juzInfo.name}`,
+          status: "Completed",
+          timestamp: now
+        });
+        if (!checkRoundCompletion(readerName)) {
+          saveState();
+          renderUI();
+          showStatus(`Juz ${juzNum} (${juzInfo.name}) marked Completed by ${readerName}!`, "success");
+        }
+      }
+    }
+
+    function handleClaimFullQuran() {
+      const readerName = getValidatedReaderName();
+      if (!readerName) return;
+
+      const now = new Date().toLocaleString();
+      state.fullQuranCount += 1;
+      state.logs.push({
+        reader: readerName,
+        chapter: "Full Quran (Entire 30 Siparas Claimed)",
+        status: "Completed",
+        timestamp: now
+      });
+
+      // Reset current round so all 30 Siparas unlock for the next round
+      state.roundState = initDefaultRoundState();
+      saveState();
+      renderUI();
+      showStatus(`MashaAllah! Entire 30 Siparas (Full Quran) claimed by ${readerName}. Full Quran counter increased by 1!`, "success");
+    }
+
+    function renderUI() {
+      let availableCount = 0;
+      let readingCount = 0;
+      let completedCount = 0;
+
+      for (let i = 1; i <= 30; i++) {
+        const st = state.roundState[i]?.status || "available";
+        if (st === "available") availableCount++;
+        else if (st === "reading") readingCount++;
+        else if (st === "completed") completedCount++;
+      }
+
+      document.getElementById("metricAvailable").textContent = `${availableCount} / 30`;
+      document.getElementById("metricReading").textContent = `${readingCount}`;
+      document.getElementById("metricCompleted").textContent = `${completedCount}`;
+      document.getElementById("metricFullQuran").textContent = `★ ${state.fullQuranCount}`;
+
+      const grid = document.getElementById("juzGrid");
+      grid.innerHTML = "";
+
+      JUZ_DATA.forEach(juz => {
+        const item = state.roundState[juz.num] || { status: "available", reader: "" };
+        const card = document.createElement("div");
+        card.className = `juz-card status-${item.status}`;
+        card.addEventListener("click", () => handleJuzClick(juz.num));
+
+        let chipClass = "chip-available";
+        let chipText = "Available";
+        if (item.status === "reading") {
+          chipClass = "chip-reading";
+          chipText = "Being Read";
+        } else if (item.status === "completed") {
+          chipClass = "chip-completed";
+          chipText = "Completed";
+        }
+
+        card.innerHTML = `
+          <div>
+            <div class="juz-top">
+              <span class="juz-pill">Juz ${juz.num}</span>
+              <span class="juz-arabic">${juz.arabic}</span>
+            </div>
+            <div class="juz-name">${juz.name}</div>
+          </div>
+          <div class="juz-footer">
+            <span class="status-chip ${chipClass}">${chipText}</span>
+            ${item.reader ? `<span class="reader-tag" title="${escapeHtml(item.reader)}">${escapeHtml(item.reader)}</span>` : ""}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function verifyAdminPassword() {
+      const passInput = document.getElementById("adminPasswordInput");
+      const val = passInput.value.trim();
+      if (!val) {
+        passInput.classList.add("error");
+        passInput.focus();
+        showStatus("Please enter the password to verify.", "error");
+        return;
+      }
+
+      if (val === ADMIN_KEY) {
+        isAdminUnlocked = true;
+        passInput.value = "";
+        passInput.classList.remove("error");
+        document.getElementById("adminLoginSection").style.display = "none";
+        document.getElementById("adminControlsSection").classList.add("unlocked");
+        showStatus("Admin mode verified and unlocked.", "success");
+      } else {
+        passInput.classList.add("error");
+        passInput.select();
+        showStatus("Incorrect password. Verification failed.", "error");
+      }
+    }
+
+    function lockAdminMode() {
+      isAdminUnlocked = false;
+      confirmResetPending = false;
+      document.getElementById("resetTrackerBtn").textContent = "Reset Tracker";
+      document.getElementById("adminControlsSection").classList.remove("unlocked");
+      document.getElementById("adminLoginSection").style.display = "block";
+      showStatus("Admin mode locked.", "info");
+    }
+
+    function downloadExcelData() {
+      if (!isAdminUnlocked) {
+        showStatus("Admin verification required.", "error");
+        return;
+      }
+
+      let rows = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office"
+              xmlns:x="urn:schemas-microsoft-com:office:excel"
+              xmlns="http://www.w3.org/TR/REC-html40">
+        <head><meta charset="UTF-8"></head>
+        <body>
+          <h3>Summary Metrics</h3>
+          <table border="1">
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Full Quran Completed Rounds</td><td>${state.fullQuranCount}</td></tr>
+            <tr><td>Total Activity Logs</td><td>${state.logs.length}</td></tr>
+          </table>
+          <br/>
+          <h3>Current Round Juz Status</h3>
+          <table border="1">
+            <tr><th>Juz</th><th>Name</th><th>Status</th><th>Reader</th></tr>
+      `;
+
+      JUZ_DATA.forEach(j => {
+        const st = state.roundState[j.num] || { status: "available", reader: "" };
+        rows += `<tr><td>Juz ${j.num}</td><td>${escapeHtml(j.name)}</td><td>${escapeHtml(st.status)}</td><td>${escapeHtml(st.reader)}</td></tr>`;
+      });
+
+      rows += `
+          </table>
+          <br/>
+          <h3>Reader Activity Logs</h3>
+          <table border="1">
+            <tr><th>#</th><th>Reader Name</th><th>Sipara / Chapter</th><th>Action / Status</th><th>Timestamp</th></tr>
+      `;
+
+      state.logs.forEach((log, idx) => {
+        rows += `<tr><td>${idx + 1}</td><td>${escapeHtml(log.reader)}</td><td>${escapeHtml(log.chapter)}</td><td>${escapeHtml(log.status)}</td><td>${escapeHtml(log.timestamp)}</td></tr>`;
+      });
+
+      rows += `</table></body></html>`;
+
+      const blob = new Blob([rows], { type: "application/vnd.ms-excel;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Quran_Sipara_Tracker.xls";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showStatus("Excel data downloaded.", "success");
+    }
+
+    function resetTrackerData() {
+      if (!isAdminUnlocked) {
+        showStatus("Admin verification required.", "error");
+        return;
+      }
+
+      const resetBtn = document.getElementById("resetTrackerBtn");
+      if (!confirmResetPending) {
+        confirmResetPending = true;
+        resetBtn.textContent = "Confirm Reset?";
+        showStatus("Click 'Confirm Reset?' again to clear all tracker data.", "error");
+        return;
+      }
+
+      state = {
+        roundState: initDefaultRoundState(),
+        fullQuranCount: 0,
+        logs: []
+      };
+      confirmResetPending = false;
+      resetBtn.textContent = "Reset Tracker";
+      localStorage.removeItem("quran_juz_tracker_v3");
+      if (window.location.hash) {
+        try {
+          window.history.replaceState(null, "", window.location.pathname + window.location.search);
+        } catch (e) {
+          window.location.hash = "";
+        }
+      }
+      renderUI();
+      showStatus("Tracker has been completely reset.", "success");
+    }
+
+    function copyShareLink() {
+      try {
+        const encoded = btoa(encodeURIComponent(JSON.stringify(state)));
+        const shareUrl = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
+        navigator.clipboard.writeText(shareUrl).then(() => {
+          showStatus("Share link copied to clipboard!", "success");
+        }).catch(() => {
+          prompt("Copy this share link:", shareUrl);
+        });
+      } catch (e) {
+        showStatus("Unable to generate share link.", "error");
+      }
+    }
+
+    // Event Listeners
+    document.getElementById("readerNameInput").addEventListener("input", (e) => {
+      if (e.target.value.trim()) e.target.classList.remove("error");
+    });
+
+    document.getElementById("claimFullBtn").addEventListener("click", handleClaimFullQuran);
+    document.getElementById("shareLinkBtn").addEventListener("click", copyShareLink);
+
+    document.getElementById("adminToggleBtn").addEventListener("click", () => {
+      const panel = document.getElementById("adminPanel");
+      panel.classList.toggle("visible");
+      document.getElementById("adminToggleBtn").classList.toggle("active", panel.classList.contains("visible"));
+    });
+
+    document.getElementById("verifyPasswordBtn").addEventListener("click", verifyAdminPassword);
+    document.getElementById("adminPasswordInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        verifyAdminPassword();
+      }
+    });
+    document.getElementById("adminPasswordInput").addEventListener("input", (e) => {
+      e.target.classList.remove("error");
+    });
+
+    document.getElementById("downloadExcelBtn").addEventListener("click", downloadExcelData);
+    document.getElementById("resetTrackerBtn").addEventListener("click", resetTrackerData);
+    document.getElementById("lockAdminBtn").addEventListener("click", lockAdminMode);
+
+    // Initialize
+    loadState();
+    renderUI();
+  </script>
+</body>
+</html>
