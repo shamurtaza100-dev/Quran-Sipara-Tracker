@@ -6,891 +6,483 @@
   <title>Quran Sipara Reading Tracker</title>
   <style>
     :root {
-      --bg-page: #131314;
-      --bg-surface: #1e1f20;
-      --bg-card: #282a2c;
-      --bg-card-hover: #313437;
-      --bg-input: #2b2d30;
-      --border: #3c4043;
-      --text-primary: #e3e3e3;
-      --text-secondary: #9aa0a6;
-      --blue-btn: #2563eb;
-      --blue-btn-hover: #1d4ed8;
-      --blue-accent: #8ab4f8;
-      --green-text: #81c995;
-      --green-bg: rgba(129, 201, 149, 0.14);
-      --amber-text: #fdd663;
-      --amber-bg: rgba(253, 214, 99, 0.14);
-      --blue-status: #8ab4f8;
-      --blue-status-bg: rgba(138, 180, 248, 0.14);
-      --red-text: #f28b82;
-      --red-btn: #b3261e;
+      --bg: #131314;
+      --surface: #1e1f20;
+      --surface-hover: #282a2c;
+      --border: #333537;
+      --text: #e3e3e3;
+      --muted: #9aa0a6;
+      --green: #34a853;
+      --green-bg: rgba(52, 168, 83, 0.14);
+      --amber: #fbbc04;
+      --amber-bg: rgba(251, 188, 4, 0.15);
+      --blue: #8ab4f8;
+      --blue-solid: #3b82f6;
+      --blue-bg: rgba(138, 180, 248, 0.14);
+      --danger: #f28b82;
+      --danger-solid: #dc2626;
     }
+    * { box-sizing: border-box; font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { margin: 0; background: var(--bg); color: var(--text); padding: 20px; }
+    .container { max-width: 1020px; margin: 0 auto; }
+    header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 22px; }
+    .title-area h1 { margin: 0 0 6px; font-size: 1.65rem; font-weight: 700; display: flex; align-items: center; gap: 10px; color: #fff; }
+    .title-area p { margin: 0; color: var(--muted); font-size: 0.92rem; }
+    .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+    .sync-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+    .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+    .sync-pill.syncing .sync-dot { background: var(--amber); }
+    .sync-pill.error .sync-dot { background: var(--danger); }
+    .pill-btn { background: var(--surface); color: var(--text); border: 1px solid var(--border); padding: 9px 16px; border-radius: 999px; font-size: 0.88rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; transition: background 0.15s, border-color 0.15s; }
+    .pill-btn:hover { background: var(--surface-hover); border-color: #4b4e52; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    }
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+    @media (max-width: 720px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px 18px; }
+    .stat-label { font-size: 0.82rem; color: var(--muted); font-weight: 600; margin-bottom: 6px; }
+    .stat-value { font-size: 1.55rem; font-weight: 700; }
+    .stat-green { color: var(--green); }
+    .stat-amber { color: var(--amber); }
+    .stat-blue { color: var(--blue); }
 
-    body {
-      background-color: var(--bg-page);
-      color: var(--text-primary);
-      padding: 16px;
-      display: flex;
-      justify-content: center;
-    }
+    .control-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-bottom: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .input-row { display: flex; flex-direction: column; gap: 6px; }
+    .input-row label { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+    .input-row label span { color: var(--danger); }
+    input[type="text"], input[type="password"] { background: var(--bg); color: #fff; border: 1.5px solid var(--border); border-radius: 10px; padding: 11px 14px; font-size: 0.95rem; width: 100%; outline: none; transition: border-color 0.15s; }
+    input:focus { border-color: var(--blue); }
+    input.input-error { border-color: var(--danger); background: rgba(242, 139, 130, 0.08); }
 
-    .app-container {
-      width: 100%;
-      max-width: 720px;
-      background-color: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-    }
+    .claim-full-btn { width: 100%; background: var(--blue-solid); color: #fff; border: none; border-radius: 10px; padding: 12px 18px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .claim-full-btn:hover { opacity: 0.92; }
 
-    /* Header */
-    .header {
-      margin-bottom: 18px;
-    }
+    .status-banner { min-height: 22px; font-size: 0.9rem; font-weight: 500; margin-bottom: 14px; color: var(--green); }
+    .status-banner.error { color: var(--danger); }
 
-    .title-row {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 8px;
-    }
+    .juz-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 14px; margin-bottom: 24px; }
+    .juz-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; transition: border-color 0.15s, transform 0.1s; }
+    .juz-card.status-reading { border-color: rgba(251, 188, 4, 0.55); background: linear-gradient(180deg, rgba(251,188,4,0.06) 0%, var(--surface) 100%); }
+    .juz-card.status-completed { border-color: rgba(138, 180, 248, 0.45); background: linear-gradient(180deg, rgba(138,180,248,0.06) 0%, var(--surface) 100%); opacity: 0.85; }
 
-    .title-icon {
-      font-size: 1.45rem;
-    }
+    .juz-top { display: flex; justify-content: space-between; align-items: center; }
+    .juz-num { font-size: 0.95rem; font-weight: 700; color: #fff; }
+    .status-tag { font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+    .tag-available { background: var(--green-bg); color: var(--green); }
+    .tag-reading { background: var(--amber-bg); color: var(--amber); }
+    .tag-completed { background: var(--blue-bg); color: var(--blue); }
 
-    h1 {
-      font-size: 1.35rem;
-      font-weight: 700;
-      color: #ffffff;
-      letter-spacing: -0.01em;
-    }
+    .juz-arabic { font-size: 1.35rem; font-weight: 700; text-align: right; color: #fff; direction: rtl; line-height: 1.5; }
+    .juz-translit { font-size: 0.82rem; color: var(--muted); margin-top: -6px; }
+    .juz-reader { font-size: 0.78rem; color: var(--text); background: rgba(255,255,255,0.04); padding: 6px 9px; border-radius: 8px; }
 
-    .subtitle {
-      font-size: 0.88rem;
-      line-height: 1.45;
-      color: var(--text-secondary);
-    }
+    .card-btn { width: 100%; border: none; border-radius: 8px; padding: 9px 12px; font-size: 0.84rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+    .card-btn:hover:not(:disabled) { opacity: 0.9; }
+    .btn-claim { background: rgba(52, 168, 83, 0.2); color: var(--green); border: 1px solid rgba(52, 168, 83, 0.4); }
+    .btn-finish { background: var(--amber); color: #131314; }
+    .btn-locked { background: rgba(138, 180, 248, 0.12); color: var(--blue); cursor: not-allowed; }
 
-    /* Top Action Pills */
-    .top-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
-    }
-
-    .pill-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background-color: var(--bg-card);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 8px 16px;
-      font-size: 0.86rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background-color 0.15s ease, border-color 0.15s ease;
-    }
-
-    .pill-btn:hover {
-      background-color: var(--bg-card-hover);
-      border-color: #5f6368;
-    }
-
-    .pill-btn.active {
-      border-color: var(--blue-accent);
-      background-color: rgba(138, 180, 248, 0.12);
-    }
-
-    /* Metrics Bar */
-    .metrics-bar {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-      padding: 14px 8px;
-      border-top: 1px solid var(--border);
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 18px;
-      text-align: center;
-    }
-
-    .metric-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-
-    .metric-label {
-      font-size: 0.78rem;
-      color: var(--text-secondary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      max-width: 100%;
-    }
-
-    .metric-value {
-      font-size: 1rem;
-      font-weight: 700;
-    }
-
-    .metric-available { color: var(--green-text); }
-    .metric-reading { color: var(--amber-text); }
-    .metric-completed { color: var(--blue-status); }
-    .metric-full { color: var(--blue-status); }
-
-    /* Panel Sections */
-    .panel-box {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .field-label {
-      display: block;
-      font-size: 0.88rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 10px;
-    }
-
-    .field-label .req {
-      color: var(--red-text);
-    }
-
-    .text-input {
-      width: 100%;
-      background-color: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      color: #ffffff;
-      font-size: 0.92rem;
-      outline: none;
-      transition: border-color 0.15s ease, box-shadow 0.15s ease;
-    }
-
-    .text-input::placeholder {
-      color: var(--text-secondary);
-    }
-
-    .text-input:focus {
-      border-color: var(--blue-accent);
-      box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
-    }
-
-    .text-input.error {
-      border-color: var(--red-text);
-      box-shadow: 0 0 0 2px rgba(242, 139, 130, 0.25);
-    }
-
-    .claim-full-btn {
-      width: 100%;
-      margin-top: 12px;
-      background-color: var(--blue-btn);
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      padding: 12px 18px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background-color 0.15s ease;
-    }
-
-    .claim-full-btn:hover {
-      background-color: var(--blue-btn-hover);
-    }
-
-    /* Admin Panel */
-    .admin-box {
-      display: none;
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 18px;
-      margin-bottom: 16px;
-    }
-
-    .admin-box.visible {
-      display: block;
-    }
-
-    .admin-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      color: var(--text-primary);
-      margin-bottom: 12px;
-    }
-
-    .verify-btn-wrap {
-      display: flex;
-      justify-content: center;
-      margin-top: 12px;
-    }
-
-    .verify-btn {
-      background-color: var(--blue-btn);
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      padding: 10px 28px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.15s ease;
-    }
-
-    .verify-btn:hover {
-      background-color: var(--blue-btn-hover);
-    }
-
-    .admin-controls {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 4px;
-    }
-
-    .admin-controls.unlocked {
-      display: flex;
-    }
-
-    .admin-badge-verified {
-      text-align: center;
-      font-size: 0.85rem;
-      color: var(--green-text);
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .admin-btn-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-    }
-
-    .btn-excel {
-      background-color: #1e8e3e;
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      padding: 10px 18px;
-      font-size: 0.86rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn-reset {
-      background-color: var(--red-btn);
-      color: #ffffff;
-      border: none;
-      border-radius: 999px;
-      padding: 10px 18px;
-      font-size: 0.86rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    .btn-lock {
-      background-color: var(--bg-input);
-      color: var(--text-primary);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 10px 18px;
-      font-size: 0.86rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-
-    /* Status Toast */
-    .status-banner {
-      display: none;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 0.85rem;
-      font-weight: 500;
-      margin-bottom: 16px;
-      background-color: rgba(138, 180, 248, 0.14);
-      border: 1px solid rgba(138, 180, 248, 0.35);
-      color: var(--blue-status);
-    }
-
-    .status-banner.error {
-      background-color: rgba(242, 139, 130, 0.14);
-      border-color: rgba(242, 139, 130, 0.35);
-      color: var(--red-text);
-    }
-
-    .status-banner.success {
-      background-color: rgba(129, 201, 149, 0.14);
-      border-color: rgba(129, 201, 149, 0.35);
-      color: var(--green-text);
-    }
-
-    /* Juz Grid */
-    .juz-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    @media (min-width: 600px) {
-      .juz-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-    }
-
-    .juz-card {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      transition: transform 0.1s ease, border-color 0.15s ease, background-color 0.15s ease;
-      user-select: none;
-      min-height: 118px;
-    }
-
-    .juz-card:hover:not(.status-completed) {
-      background-color: var(--bg-card-hover);
-      border-color: #5f6368;
-    }
-
-    .juz-card.status-reading {
-      border-color: rgba(253, 214, 99, 0.5);
-      background-color: rgba(253, 214, 99, 0.06);
-    }
-
-    .juz-card.status-completed {
-      border-color: rgba(138, 180, 248, 0.35);
-      background-color: rgba(32, 33, 36, 0.85);
-      cursor: not-allowed;
-      opacity: 0.82;
-    }
-
-    .juz-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
-    .juz-pill {
-      background-color: #35373a;
-      color: var(--text-secondary);
-      font-size: 0.74rem;
-      font-weight: 600;
-      padding: 3px 8px;
-      border-radius: 6px;
-    }
-
-    .juz-arabic {
-      font-size: 1rem;
-      font-weight: 700;
-      color: var(--blue-accent);
-      direction: rtl;
-    }
-
-    .juz-name {
-      font-size: 0.94rem;
-      font-weight: 600;
-      color: #ffffff;
-      margin-bottom: 12px;
-    }
-
-    .juz-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .status-chip {
-      font-size: 0.75rem;
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 8px;
-      display: inline-block;
-    }
-
-    .chip-available {
-      background-color: var(--green-bg);
-      color: var(--green-text);
-    }
-
-    .chip-reading {
-      background-color: var(--amber-bg);
-      color: var(--amber-text);
-    }
-
-    .chip-completed {
-      background-color: var(--blue-status-bg);
-      color: var(--blue-status);
-    }
-
-    .reader-tag {
-      font-size: 0.72rem;
-      color: var(--text-secondary);
-      max-width: 90px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .admin-box { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; margin-top: 20px; }
+    .admin-box.active { display: block; }
+    .admin-box h3 { margin: 0 0 12px; font-size: 1rem; color: #fff; }
+    .admin-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .btn-verify { background: var(--blue-solid); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-excel { background: var(--green); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-reset { background: var(--danger-solid); color: #fff; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+    .btn-lock { background: var(--surface-hover); color: var(--text); border: 1px solid var(--border); padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; }
   </style>
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <div class="header">
-      <div class="title-row">
-        <span class="title-icon">📚</span>
-        <h1>Quran Sipara Reading Tracker</h1>
+  <div class="container">
+    <header>
+      <div class="title-area">
+        <h1>📖 Quran Sipara Reading Tracker</h1>
+        <p>Select a Juz to start reading, mark it complete when finished, and track collective Quran completions.</p>
       </div>
-      <p class="subtitle">
-        Single-round lock tracker with compulsory verification &amp; automatic Full Quran completion metrics
-      </p>
-    </div>
+      <div class="header-actions">
+        <span id="syncPill" class="sync-pill"><span class="sync-dot"></span><span id="syncText">Live Sync Ready</span></span>
+        <button type="button" id="refreshBtn" class="pill-btn">↻ Sync Now</button>
+        <button type="button" id="shareBtn" class="pill-btn">🔗 Share link</button>
+        <button type="button" id="adminToggleBtn" class="pill-btn">🛡️ Admin view</button>
+      </div>
+    </header>
 
-    <!-- Top Action Buttons -->
-    <div class="top-actions">
-      <button type="button" id="shareLinkBtn" class="pill-btn">
-        <span>🔗</span> Share link
-      </button>
-      <button type="button" id="adminToggleBtn" class="pill-btn">
-        <span>🛡️</span> Admin view
-      </button>
-    </div>
-
-    <!-- Metrics Summary -->
-    <div class="metrics-bar">
-      <div class="metric-item">
-        <span class="metric-label">Available</span>
-        <span id="metricAvailable" class="metric-value metric-available">30 / 30</span>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Available</div>
+        <div id="statAvailable" class="stat-value stat-green">30 / 30</div>
       </div>
-      <div class="metric-item">
-        <span class="metric-label">Being Read</span>
-        <span id="metricReading" class="metric-value metric-reading">0</span>
+      <div class="stat-card">
+        <div class="stat-label">Being Read</div>
+        <div id="statReading" class="stat-value stat-amber">0</div>
       </div>
-      <div class="metric-item">
-        <span class="metric-label">Completed</span>
-        <span id="metricCompleted" class="metric-value metric-completed">0</span>
+      <div class="stat-card">
+        <div class="stat-label">Completed</div>
+        <div id="statCompleted" class="stat-value stat-blue">0</div>
       </div>
-      <div class="metric-item">
-        <span class="metric-label">Full Quran R...</span>
-        <span id="metricFullQuran" class="metric-value metric-full">★ 0</span>
+      <div class="stat-card">
+        <div class="stat-label">Full Quran Rounds</div>
+        <div id="statRounds" class="stat-value stat-blue">★ 0</div>
       </div>
     </div>
 
-    <!-- Reader Name Validation Card -->
-    <div class="panel-box">
-      <label for="readerNameInput" class="field-label">
-        Reader name validation <span class="req">*</span>
-      </label>
-      <input
-        type="text"
-        id="readerNameInput"
-        class="text-input"
-        placeholder="Enter full name to select or lock Sipara"
-        autocomplete="off"
-      />
-      <button type="button" id="claimFullBtn" class="claim-full-btn">
-        <span>🏅</span> Claim entire 30 Siparas (Full Quran)
-      </button>
+    <div class="control-bar">
+      <div class="input-row">
+        <label for="readerName">Reader name validation <span>*</span></label>
+        <input type="text" id="readerName" placeholder="Enter your full name (required before selecting any Juz or Full Quran)..." />
+      </div>
+      <button type="button" id="claimFullBtn" class="claim-full-btn">Claim entire 30 Siparas (Full Quran)</button>
     </div>
 
-    <!-- Unlock Admin Mode Card -->
-    <div id="adminPanel" class="admin-box visible">
-      <div id="adminLoginSection">
-        <div class="admin-header">
-          <span>🔒</span> Unlock Admin Mode:
-        </div>
-        <input
-          type="password"
-          id="adminPasswordInput"
-          class="text-input"
-          placeholder="Enter password"
-          autocomplete="off"
-        />
-        <div class="verify-btn-wrap">
-          <button type="button" id="verifyPasswordBtn" class="verify-btn">Verify</button>
-        </div>
-      </div>
+    <div id="statusMsg" class="status-banner"></div>
 
-      <div id="adminControlsSection" class="admin-controls">
-        <div class="admin-badge-verified">✓ Admin Mode Unlocked</div>
-        <div class="admin-btn-row">
-          <button type="button" id="downloadExcelBtn" class="btn-excel">Download Excel (.xls)</button>
-          <button type="button" id="resetTrackerBtn" class="btn-reset">Reset Tracker</button>
-          <button type="button" id="lockAdminBtn" class="btn-lock">Lock</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Status Notification -->
-    <div id="statusBanner" class="status-banner"></div>
-
-    <!-- 30 Juz Cards Grid -->
     <div id="juzGrid" class="juz-grid"></div>
+
+    <div id="adminBox" class="admin-box">
+      <h3>Unlock Admin Mode</h3>
+      <div id="adminLoginRow" class="admin-row">
+        <input type="password" id="adminPass" placeholder="Enter password" autocomplete="off" style="max-width: 260px;" />
+        <button type="button" id="verifyBtn" class="btn-verify">Verify</button>
+      </div>
+      <div id="adminControlsRow" class="admin-row" style="display:none;">
+        <span style="color: var(--green); font-weight: 600; margin-right: 6px;">Admin Unlocked:</span>
+        <button type="button" id="excelBtn" class="btn-excel">Download Excel (.xls)</button>
+        <button type="button" id="resetBtn" class="btn-reset">Reset Tracker</button>
+        <button type="button" id="lockBtn" class="btn-lock">Lock</button>
+      </div>
+    </div>
   </div>
 
   <script>
+    const GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbyiBsUIe4T1f281xkAoloKS-kkMQ3VOkJ3Su8pjAz6mq22lss_56_EKztdl9MG_djDmzw/exec";
     const ADMIN_KEY = "Qaz@1234";
 
     const JUZ_DATA = [
-      { num: 1, name: "Alif Lam Meem", arabic: "الم" },
-      { num: 2, name: "Sayaqool", arabic: "سيقول" },
-      { num: 3, name: "Tilkal Rusul", arabic: "تلك الرسل" },
-      { num: 4, name: "Lan Tanaloo", arabic: "لن تنالوا" },
-      { num: 5, name: "Wal Mohsanat", arabic: "والمحصنات" },
-      { num: 6, name: "La Yuhibbullah", arabic: "لا يحب الله" },
-      { num: 7, name: "Wa Iza Samiu", arabic: "وإذا سمعوا" },
-      { num: 8, name: "Wa Lau Annana", arabic: "ولو أننا" },
-      { num: 9, name: "Qalal Malao", arabic: "قال الملأ" },
-      { num: 10, name: "Wa A'lamu", arabic: "واعلموا" },
-      { num: 11, name: "Yatazeroon", arabic: "يعتذرون" },
-      { num: 12, name: "Wa Mamin Da'abat", arabic: "وما من دابة" },
-      { num: 13, name: "Wa Ma Ubrioo", arabic: "وما أبرئ" },
-      { num: 14, name: "Rubama", arabic: "ربما" },
-      { num: 15, name: "Subhanallazi", arabic: "سبحان الذي" },
-      { num: 16, name: "Qal Alam", arabic: "قال ألم" },
-      { num: 17, name: "Aqtarabo", arabic: "اقترب" },
-      { num: 18, name: "Qadd Aflaha", arabic: "قد أفلح" },
-      { num: 19, name: "Wa Qalallazina", arabic: "وقال الذين" },
-      { num: 20, name: "A'man Khalaq", arabic: "أمن خلق" },
-      { num: 21, name: "Utlu Ma Oohi", arabic: "اتل ما أوحي" },
-      { num: 22, name: "Wa Manyaqnut", arabic: "ومن يقنت" },
-      { num: 23, name: "Wa Mali", arabic: "وما لي" },
-      { num: 24, name: "Faman Azlam", arabic: "فمن أظلم" },
-      { num: 25, name: "Elahe Yuruddo", arabic: "إليه يرد" },
-      { num: 26, name: "Ha'a Meem", arabic: "حم" },
-      { num: 27, name: "Qala Fama Khatbukum", arabic: "قال فما خطبكم" },
-      { num: 28, name: "Qadd Sami Allah", arabic: "قد سمع الله" },
-      { num: 29, name: "Tabarakallazi", arabic: "تبارك الذي" },
-      { num: 30, name: "Amma Yatasa'aloon", arabic: "عم يتساءلون" }
+      { num: 1, ar: "الم", tr: "Alif Lam Meem" },
+      { num: 2, ar: "سَيَقُولُ", tr: "Sayaqool" },
+      { num: 3, ar: "تِلْكَ الرُّسُلُ", tr: "Tilkal Rusull" },
+      { num: 4, ar: "لَنْ تَنَالُوا", tr: "Lan Tana Loo" },
+      { num: 5, ar: "وَالْمُحْصَنَاتُ", tr: "Wal Mohsanat" },
+      { num: 6, ar: "لَا يُحِبُّ اللَّهُ", tr: "La Yuhibbullah" },
+      { num: 7, ar: "وَإِذَا سَمِعُوا", tr: "Wa Iza Samiu" },
+      { num: 8, ar: "وَلَوْ أَنَّنَا", tr: "Wa Lau Annana" },
+      { num: 9, ar: "قَالَ الْمَلَأُ", tr: "Qalal Malao" },
+      { num: 10, ar: "وَاعْلَمُوا", tr: "Wa A'lamu" },
+      { num: 11, ar: "يَعْتَذِرُونَ", tr: "Yatazeroon" },
+      { num: 12, ar: "وَمَا مِنْ دَابَّةٍ", tr: "Wa Mamin Da'abat" },
+      { num: 13, ar: "وَمَا أُبَرِّئُ", tr: "Wa Ma Ubrioo" },
+      { num: 14, ar: "رُبَمَا", tr: "Rubama" },
+      { num: 15, ar: "سُبْحَانَ الَّذِي", tr: "Subhanallazi" },
+      { num: 16, ar: "قَالَ أَلَمْ", tr: "Qal Alam" },
+      { num: 17, ar: "اقْتَرَبَ", tr: "Aqtarabo" },
+      { num: 18, ar: "قَدْ أَفْلَحَ", tr: "Qadd Aflaha" },
+      { num: 19, ar: "وَقَالَ الَّذِينَ", tr: "Wa Qalallazina" },
+      { num: 20, ar: "أَمَّنْ خَلَقَ", tr: "A'man Khalaq" },
+      { num: 21, ar: "اتْلُ مَا أُوحِيَ", tr: "Utlu Ma Oohi" },
+      { num: 22, ar: "وَمَنْ يَقْنُتْ", tr: "Wa Manyaqnut" },
+      { num: 23, ar: "وَمَا لِيَ", tr: "Wa Mali" },
+      { num: 24, ar: "فَمَنْ أَظْلَمُ", tr: "Faman Azlam" },
+      { num: 25, ar: "إِلَيْهِ يُرَدُّ", tr: "Elahe Yuruddo" },
+      { num: 26, ar: "حم", tr: "Ha'a Meem" },
+      { num: 27, ar: "قَالَ فَمَا خَطْبُكُمْ", tr: "Qala Fama Khatbukum" },
+      { num: 28, ar: "قَدْ سَمِعَ اللَّهُ", tr: "Qadd Sami Allah" },
+      { num: 29, ar: "تَبَارَكَ الَّذِي", tr: "Tabarakallazi" },
+      { num: 30, ar: "عَمَّ يَتَسَاءَلُونَ", tr: "Amma Yatasa'aloon" }
     ];
 
-    // State structure:
-    // roundState: { [1..30]: { status: 'available' | 'reading' | 'completed', reader: string } }
-    // fullQuranCount: number
-    // logs: Array<{ entry, reader, chapter, status, timestamp }>
     let state = {
-      roundState: {},
-      fullQuranCount: 0,
+      juzState: {},
+      fullRounds: 0,
       logs: []
     };
 
-    let isAdminUnlocked = false;
-    let confirmResetPending = false;
+    let adminUnlocked = false;
+    let resetConfirmed = false;
+    let isSyncing = false;
 
-    function initDefaultRoundState() {
-      const obj = {};
-      for (let i = 1; i <= 30; i++) {
-        obj[i] = { status: "available", reader: "" };
+    try {
+      const cached = JSON.parse(localStorage.getItem("quran_sipara_dark_v1") || "null");
+      if (cached && typeof cached === "object") {
+        state = {
+          juzState: cached.juzState || {},
+          fullRounds: cached.fullRounds || 0,
+          logs: cached.logs || []
+        };
       }
-      return obj;
+    } catch (e) {}
+
+    function setSyncStatus(mode, text) {
+      const pill = document.getElementById("syncPill");
+      const label = document.getElementById("syncText");
+      pill.className = "sync-pill" + (mode ? " " + mode : "");
+      label.textContent = text;
     }
 
-    function loadState() {
+    async function loadFromSheet(silent = false) {
+      if (isSyncing) return;
+      isSyncing = true;
+      setSyncStatus("syncing", "Syncing...");
       try {
-        if (window.location.hash.startsWith("#data=")) {
-          const decoded = JSON.parse(decodeURIComponent(atob(window.location.hash.slice(6))));
-          if (decoded && decoded.roundState) {
-            state = decoded;
-            saveState();
-            return;
-          }
+        const res = await fetch(GOOGLE_SHEET_API + "?t=" + Date.now(), {
+          method: "GET",
+          redirect: "follow"
+        });
+        const data = await res.json();
+        if (data && typeof data === "object") {
+          state = {
+            juzState: data.juzState || {},
+            fullRounds: Number(data.fullRounds) || 0,
+            logs: Array.isArray(data.logs) ? data.logs : []
+          };
+          localStorage.setItem("quran_sipara_dark_v1", JSON.stringify(state));
+          render();
+          setSyncStatus("", "Live Synced");
+          if (!silent) showStatus("Synced latest data from Google Sheet.");
         }
-        const saved = localStorage.getItem("quran_juz_tracker_v3");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          if (parsed && parsed.roundState) {
-            state = parsed;
-            return;
-          }
-        }
-      } catch (e) {}
-      state.roundState = initDefaultRoundState();
-      state.fullQuranCount = 0;
-      state.logs = [];
+      } catch (err) {
+        setSyncStatus("error", "Offline / Retry");
+        if (!silent) showStatus("Could not reach Google Sheet. Check internet or deployment access.", true);
+      } finally {
+        isSyncing = false;
+      }
     }
 
-    function saveState() {
-      localStorage.setItem("quran_juz_tracker_v3", JSON.stringify(state));
+    async function pushToSheet() {
+      localStorage.setItem("quran_sipara_dark_v1", JSON.stringify(state));
+      setSyncStatus("syncing", "Saving to Sheet...");
+      try {
+        await fetch(GOOGLE_SHEET_API, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain;charset=utf-8" },
+          body: JSON.stringify(state)
+        });
+        setSyncStatus("", "Saved to Sheet");
+      } catch (err) {
+        setSyncStatus("error", "Save Failed");
+        showStatus("Saved locally, but failed to sync to Google Sheet.", true);
+      }
     }
 
-    function showStatus(msg, type = "info") {
-      const banner = document.getElementById("statusBanner");
-      banner.textContent = msg;
-      banner.className = "status-banner " + type;
-      banner.style.display = "block";
+    function showStatus(msg, isError = false) {
+      const el = document.getElementById("statusMsg");
+      el.textContent = msg;
+      el.className = isError ? "status-banner error" : "status-banner";
     }
 
-    function getValidatedReaderName() {
-      const input = document.getElementById("readerNameInput");
+    function getValidReaderName() {
+      const input = document.getElementById("readerName");
       const name = input.value.trim();
       if (!name) {
-        input.classList.add("error");
+        input.classList.add("input-error");
         input.focus();
-        showStatus("Reader name is compulsory before selecting, locking, or completing any Sipara.", "error");
+        showStatus("Reader name is compulsory before selecting, updating, or claiming any Sipara or Full Quran.", true);
         return null;
       }
-      input.classList.remove("error");
+      input.classList.remove("input-error");
       return name;
     }
 
-    function checkRoundCompletion(lastReaderName) {
-      let completedCount = 0;
-      for (let i = 1; i <= 30; i++) {
-        if (state.roundState[i] && state.roundState[i].status === "completed") {
-          completedCount++;
-        }
-      }
+    async function handleStartReading(juzNum) {
+      const name = getValidReaderName();
+      if (!name) return;
 
-      if (completedCount === 30) {
-        state.fullQuranCount += 1;
-        state.logs.push({
-          reader: lastReaderName,
-          chapter: "Full Quran (All 30 Siparas Completed)",
-          status: "Completed",
-          timestamp: new Date().toLocaleString()
-        });
-        state.roundState = initDefaultRoundState();
-        saveState();
-        renderUI();
-        showStatus("MashaAllah! All 30 Siparas completed! Full Quran counter increased by 1 and a new round is now unlocked.", "success");
-        return true;
-      }
-      return false;
-    }
+      const current = state.juzState[juzNum];
+      if (current && current.status !== "available") return;
 
-    function handleJuzClick(juzNum) {
-      const current = state.roundState[juzNum] || { status: "available", reader: "" };
-
-      if (current.status === "completed") {
-        showStatus(`Juz ${juzNum} is already completed and locked until all 30 Siparas finish.`, "error");
-        return;
-      }
-
-      const readerName = getValidatedReaderName();
-      if (!readerName) return;
-
-      const juzInfo = JUZ_DATA.find(j => j.num === juzNum);
-      const now = new Date().toLocaleString();
-
-      if (current.status === "available") {
-        state.roundState[juzNum] = { status: "reading", reader: readerName };
-        state.logs.push({
-          reader: readerName,
-          chapter: `Juz ${juzNum} - ${juzInfo.name}`,
-          status: "Being Read (Locked)",
-          timestamp: now
-        });
-        saveState();
-        renderUI();
-        showStatus(`Juz ${juzNum} (${juzInfo.name}) locked as Being Read by ${readerName}. Click it again to mark Completed.`, "info");
-      } else if (current.status === "reading") {
-        state.roundState[juzNum] = { status: "completed", reader: readerName };
-        state.logs.push({
-          reader: readerName,
-          chapter: `Juz ${juzNum} - ${juzInfo.name}`,
-          status: "Completed",
-          timestamp: now
-        });
-        if (!checkRoundCompletion(readerName)) {
-          saveState();
-          renderUI();
-          showStatus(`Juz ${juzNum} (${juzInfo.name}) marked Completed by ${readerName}!`, "success");
-        }
-      }
-    }
-
-    function handleClaimFullQuran() {
-      const readerName = getValidatedReaderName();
-      if (!readerName) return;
-
-      const now = new Date().toLocaleString();
-      state.fullQuranCount += 1;
+      state.juzState[juzNum] = { status: "reading", reader: name };
       state.logs.push({
-        reader: readerName,
-        chapter: "Full Quran (Entire 30 Siparas Claimed)",
-        status: "Completed",
-        timestamp: now
+        time: new Date().toLocaleString(),
+        reader: name,
+        item: "Juz " + juzNum,
+        action: "Started Reading"
+      });
+      render();
+      showStatus("Juz " + juzNum + " marked as Being Read by " + name + ".");
+      await pushToSheet();
+    }
+
+    async function handleCompleteJuz(juzNum) {
+      const name = getValidReaderName();
+      if (!name) return;
+
+      state.juzState[juzNum] = { status: "completed", reader: name };
+      state.logs.push({
+        time: new Date().toLocaleString(),
+        reader: name,
+        item: "Juz " + juzNum,
+        action: "Completed"
       });
 
-      // Reset current round so all 30 Siparas unlock for the next round
-      state.roundState = initDefaultRoundState();
-      saveState();
-      renderUI();
-      showStatus(`MashaAllah! Entire 30 Siparas (Full Quran) claimed by ${readerName}. Full Quran counter increased by 1!`, "success");
+      const completedCount = JUZ_DATA.filter(j => state.juzState[j.num]?.status === "completed").length;
+      if (completedCount === 30) {
+        state.fullRounds += 1;
+        state.logs.push({
+          time: new Date().toLocaleString(),
+          reader: name,
+          item: "Full Quran (All 30 Juz)",
+          action: "Round Completed (+1)"
+        });
+        state.juzState = {};
+        render();
+        showStatus("MashaAllah! All 30 Juz completed! Full Quran Rounds increased by 1 and all 30 Juz are unlocked for the next round.");
+      } else {
+        render();
+        showStatus("Juz " + juzNum + " completed by " + name + "! (" + completedCount + "/30 completed in current round)");
+      }
+      await pushToSheet();
     }
 
-    function renderUI() {
-      let availableCount = 0;
-      let readingCount = 0;
-      let completedCount = 0;
+    async function handleClaimFullQuran() {
+      const name = getValidReaderName();
+      if (!name) return;
 
-      for (let i = 1; i <= 30; i++) {
-        const st = state.roundState[i]?.status || "available";
-        if (st === "available") availableCount++;
-        else if (st === "reading") readingCount++;
-        else if (st === "completed") completedCount++;
-      }
+      state.fullRounds += 1;
+      state.logs.push({
+        time: new Date().toLocaleString(),
+        reader: name,
+        item: "Full Quran (30 Siparas)",
+        action: "Claimed Full Quran (+1)"
+      });
+      render();
+      showStatus("MashaAllah! Full Quran completion recorded for " + name + ". Total Full Quran Rounds: " + state.fullRounds + ".");
+      await pushToSheet();
+    }
 
-      document.getElementById("metricAvailable").textContent = `${availableCount} / 30`;
-      document.getElementById("metricReading").textContent = `${readingCount}`;
-      document.getElementById("metricCompleted").textContent = `${completedCount}`;
-      document.getElementById("metricFullQuran").textContent = `★ ${state.fullQuranCount}`;
+    function render() {
+      let available = 0;
+      let reading = 0;
+      let completed = 0;
+
+      JUZ_DATA.forEach(j => {
+        const st = state.juzState[j.num]?.status || "available";
+        if (st === "reading") reading++;
+        else if (st === "completed") completed++;
+        else available++;
+      });
+
+      document.getElementById("statAvailable").textContent = available + " / 30";
+      document.getElementById("statReading").textContent = reading;
+      document.getElementById("statCompleted").textContent = completed;
+      document.getElementById("statRounds").textContent = "★ " + state.fullRounds;
 
       const grid = document.getElementById("juzGrid");
       grid.innerHTML = "";
 
-      JUZ_DATA.forEach(juz => {
-        const item = state.roundState[juz.num] || { status: "available", reader: "" };
-        const card = document.createElement("div");
-        card.className = `juz-card status-${item.status}`;
-        card.addEventListener("click", () => handleJuzClick(juz.num));
+      JUZ_DATA.forEach(j => {
+        const entry = state.juzState[j.num] || { status: "available", reader: "" };
+        const st = entry.status;
 
-        let chipClass = "chip-available";
-        let chipText = "Available";
-        if (item.status === "reading") {
-          chipClass = "chip-reading";
-          chipText = "Being Read";
-        } else if (item.status === "completed") {
-          chipClass = "chip-completed";
-          chipText = "Completed";
+        const card = document.createElement("div");
+        card.className = "juz-card" + (st === "reading" ? " status-reading" : st === "completed" ? " status-completed" : "");
+
+        const top = document.createElement("div");
+        top.className = "juz-top";
+
+        const numEl = document.createElement("span");
+        numEl.className = "juz-num";
+        numEl.textContent = "Juz " + j.num;
+
+        const tag = document.createElement("span");
+        tag.className = "status-tag " + (st === "reading" ? "tag-reading" : st === "completed" ? "tag-completed" : "tag-available");
+        tag.textContent = st === "reading" ? "Being Read" : st === "completed" ? "Completed" : "Available";
+
+        top.appendChild(numEl);
+        top.appendChild(tag);
+
+        const arEl = document.createElement("div");
+        arEl.className = "juz-arabic";
+        arEl.textContent = j.ar;
+
+        const trEl = document.createElement("div");
+        trEl.className = "juz-translit";
+        trEl.textContent = j.tr;
+
+        card.appendChild(top);
+        card.appendChild(arEl);
+        card.appendChild(trEl);
+
+        if (entry.reader) {
+          const readerEl = document.createElement("div");
+          readerEl.className = "juz-reader";
+          readerEl.textContent = (st === "completed" ? "Completed by: " : "Reader: ") + entry.reader;
+          card.appendChild(readerEl);
         }
 
-        card.innerHTML = `
-          <div>
-            <div class="juz-top">
-              <span class="juz-pill">Juz ${juz.num}</span>
-              <span class="juz-arabic">${juz.arabic}</span>
-            </div>
-            <div class="juz-name">${juz.name}</div>
-          </div>
-          <div class="juz-footer">
-            <span class="status-chip ${chipClass}">${chipText}</span>
-            ${item.reader ? `<span class="reader-tag" title="${escapeHtml(item.reader)}">${escapeHtml(item.reader)}</span>` : ""}
-          </div>
-        `;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        if (st === "available") {
+          btn.className = "card-btn btn-claim";
+          btn.textContent = "Start Reading";
+          btn.addEventListener("click", () => handleStartReading(j.num));
+        } else if (st === "reading") {
+          btn.className = "card-btn btn-finish";
+          btn.textContent = "Mark Complete";
+          btn.addEventListener("click", () => handleCompleteJuz(j.num));
+        } else {
+          btn.className = "card-btn btn-locked";
+          btn.textContent = "Locked (Round Complete)";
+          btn.disabled = true;
+        }
+
+        card.appendChild(btn);
         grid.appendChild(card);
       });
     }
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;");
-    }
-
-    function verifyAdminPassword() {
-      const passInput = document.getElementById("adminPasswordInput");
+    function verifyAdmin() {
+      const passInput = document.getElementById("adminPass");
       const val = passInput.value.trim();
       if (!val) {
-        passInput.classList.add("error");
+        passInput.classList.add("input-error");
         passInput.focus();
-        showStatus("Please enter the password to verify.", "error");
+        showStatus("Please enter the password before verifying.", true);
         return;
       }
-
       if (val === ADMIN_KEY) {
-        isAdminUnlocked = true;
+        adminUnlocked = true;
         passInput.value = "";
-        passInput.classList.remove("error");
-        document.getElementById("adminLoginSection").style.display = "none";
-        document.getElementById("adminControlsSection").classList.add("unlocked");
-        showStatus("Admin mode verified and unlocked.", "success");
+        passInput.classList.remove("input-error");
+        document.getElementById("adminLoginRow").style.display = "none";
+        document.getElementById("adminControlsRow").style.display = "flex";
+        showStatus("Admin mode unlocked.");
       } else {
-        passInput.classList.add("error");
+        passInput.classList.add("input-error");
         passInput.select();
-        showStatus("Incorrect password. Verification failed.", "error");
+        showStatus("Incorrect password.", true);
       }
     }
 
-    function lockAdminMode() {
-      isAdminUnlocked = false;
-      confirmResetPending = false;
-      document.getElementById("resetTrackerBtn").textContent = "Reset Tracker";
-      document.getElementById("adminControlsSection").classList.remove("unlocked");
-      document.getElementById("adminLoginSection").style.display = "block";
-      showStatus("Admin mode locked.", "info");
+    function lockAdmin() {
+      adminUnlocked = false;
+      resetConfirmed = false;
+      document.getElementById("resetBtn").textContent = "Reset Tracker";
+      document.getElementById("adminControlsRow").style.display = "none";
+      document.getElementById("adminLoginRow").style.display = "flex";
+      showStatus("Admin mode locked.");
     }
 
-    function downloadExcelData() {
-      if (!isAdminUnlocked) {
-        showStatus("Admin verification required.", "error");
+    function exportExcel() {
+      if (!adminUnlocked) {
+        showStatus("Admin verification required to download Excel.", true);
         return;
       }
-
-      let rows = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office"
-              xmlns:x="urn:schemas-microsoft-com:office:excel"
-              xmlns="http://www.w3.org/TR/REC-html40">
-        <head><meta charset="UTF-8"></head>
-        <body>
-          <h3>Summary Metrics</h3>
-          <table border="1">
-            <tr><th>Metric</th><th>Value</th></tr>
-            <tr><td>Full Quran Completed Rounds</td><td>${state.fullQuranCount}</td></tr>
-            <tr><td>Total Activity Logs</td><td>${state.logs.length}</td></tr>
-          </table>
-          <br/>
-          <h3>Current Round Juz Status</h3>
-          <table border="1">
-            <tr><th>Juz</th><th>Name</th><th>Status</th><th>Reader</th></tr>
-      `;
+      let tableHtml = "<table border='1'><tr><th colspan='4'>Quran Sipara Reading Tracker Summary</th></tr>";
+      tableHtml += "<tr><th>Full Quran Rounds Completed</th><td colspan='3'>" + state.fullRounds + "</td></tr>";
+      tableHtml += "<tr><th>Juz</th><th>Arabic</th><th>Current Round Status</th><th>Reader</th></tr>";
 
       JUZ_DATA.forEach(j => {
-        const st = state.roundState[j.num] || { status: "available", reader: "" };
-        rows += `<tr><td>Juz ${j.num}</td><td>${escapeHtml(j.name)}</td><td>${escapeHtml(st.status)}</td><td>${escapeHtml(st.reader)}</td></tr>`;
+        const entry = state.juzState[j.num] || { status: "Available", reader: "-" };
+        tableHtml += "<tr><td>Juz " + j.num + " (" + j.tr + ")</td><td>" + j.ar + "</td><td>" + entry.status + "</td><td>" + (entry.reader || "-") + "</td></tr>";
       });
 
-      rows += `
-          </table>
-          <br/>
-          <h3>Reader Activity Logs</h3>
-          <table border="1">
-            <tr><th>#</th><th>Reader Name</th><th>Sipara / Chapter</th><th>Action / Status</th><th>Timestamp</th></tr>
-      `;
-
-      state.logs.forEach((log, idx) => {
-        rows += `<tr><td>${idx + 1}</td><td>${escapeHtml(log.reader)}</td><td>${escapeHtml(log.chapter)}</td><td>${escapeHtml(log.status)}</td><td>${escapeHtml(log.timestamp)}</td></tr>`;
+      tableHtml += "<tr><td colspan='4'></td></tr><tr><th colspan='4'>Activity Logs</th></tr>";
+      tableHtml += "<tr><th>Timestamp</th><th>Reader Name</th><th>Sipara / Item</th><th>Action</th></tr>";
+      state.logs.forEach(l => {
+        tableHtml += "<tr><td>" + l.time + "</td><td>" + l.reader + "</td><td>" + l.item + "</td><td>" + l.action + "</td></tr>";
       });
+      tableHtml += "</table>";
 
-      rows += `</table></body></html>`;
-
-      const blob = new Blob([rows], { type: "application/vnd.ms-excel;charset=utf-8;" });
+      const blob = new Blob(["﻿" + tableHtml], { type: "application/vnd.ms-excel;charset=utf-8;" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -899,88 +491,77 @@
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      showStatus("Excel data downloaded.", "success");
+      showStatus("Excel file downloaded.");
     }
 
-    function resetTrackerData() {
-      if (!isAdminUnlocked) {
-        showStatus("Admin verification required.", "error");
+    async function resetTracker() {
+      if (!adminUnlocked) {
+        showStatus("Admin verification required to reset tracker.", true);
         return;
       }
-
-      const resetBtn = document.getElementById("resetTrackerBtn");
-      if (!confirmResetPending) {
-        confirmResetPending = true;
-        resetBtn.textContent = "Confirm Reset?";
-        showStatus("Click 'Confirm Reset?' again to clear all tracker data.", "error");
+      const btn = document.getElementById("resetBtn");
+      if (!resetConfirmed) {
+        resetConfirmed = true;
+        btn.textContent = "Confirm Reset?";
+        showStatus("Click 'Confirm Reset?' again to erase all tracker data from this browser and Google Sheet.", true);
         return;
       }
-
-      state = {
-        roundState: initDefaultRoundState(),
-        fullQuranCount: 0,
-        logs: []
-      };
-      confirmResetPending = false;
-      resetBtn.textContent = "Reset Tracker";
-      localStorage.removeItem("quran_juz_tracker_v3");
-      if (window.location.hash) {
-        try {
-          window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        } catch (e) {
-          window.location.hash = "";
-        }
-      }
-      renderUI();
-      showStatus("Tracker has been completely reset.", "success");
+      state = { juzState: {}, fullRounds: 0, logs: [] };
+      resetConfirmed = false;
+      btn.textContent = "Reset Tracker";
+      localStorage.removeItem("quran_sipara_dark_v1");
+      render();
+      showStatus("Tracker reset to 0.");
+      await pushToSheet();
     }
 
     function copyShareLink() {
-      try {
-        const encoded = btoa(encodeURIComponent(JSON.stringify(state)));
-        const shareUrl = `${window.location.origin}${window.location.pathname}#data=${encoded}`;
+      const shareUrl = window.location.origin + window.location.pathname;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(shareUrl).then(() => {
-          showStatus("Share link copied to clipboard!", "success");
+          showStatus("Live website link copied to clipboard!");
         }).catch(() => {
-          prompt("Copy this share link:", shareUrl);
+          prompt("Copy this live link:", shareUrl);
         });
-      } catch (e) {
-        showStatus("Unable to generate share link.", "error");
+      } else {
+        prompt("Copy this live link:", shareUrl);
       }
     }
 
-    // Event Listeners
-    document.getElementById("readerNameInput").addEventListener("input", (e) => {
-      if (e.target.value.trim()) e.target.classList.remove("error");
+    document.getElementById("readerName").addEventListener("input", (e) => {
+      if (e.target.value.trim()) e.target.classList.remove("input-error");
     });
 
     document.getElementById("claimFullBtn").addEventListener("click", handleClaimFullQuran);
-    document.getElementById("shareLinkBtn").addEventListener("click", copyShareLink);
+    document.getElementById("refreshBtn").addEventListener("click", () => loadFromSheet(false));
+    document.getElementById("shareBtn").addEventListener("click", copyShareLink);
 
     document.getElementById("adminToggleBtn").addEventListener("click", () => {
-      const panel = document.getElementById("adminPanel");
-      panel.classList.toggle("visible");
-      document.getElementById("adminToggleBtn").classList.toggle("active", panel.classList.contains("visible"));
-    });
-
-    document.getElementById("verifyPasswordBtn").addEventListener("click", verifyAdminPassword);
-    document.getElementById("adminPasswordInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        verifyAdminPassword();
+      const box = document.getElementById("adminBox");
+      box.classList.toggle("active");
+      if (box.classList.contains("active") && !adminUnlocked) {
+        document.getElementById("adminPass").focus();
       }
     });
-    document.getElementById("adminPasswordInput").addEventListener("input", (e) => {
-      e.target.classList.remove("error");
+
+    document.getElementById("verifyBtn").addEventListener("click", verifyAdmin);
+    document.getElementById("adminPass").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        verifyAdmin();
+      }
+    });
+    document.getElementById("adminPass").addEventListener("input", (e) => {
+      e.target.classList.remove("input-error");
     });
 
-    document.getElementById("downloadExcelBtn").addEventListener("click", downloadExcelData);
-    document.getElementById("resetTrackerBtn").addEventListener("click", resetTrackerData);
-    document.getElementById("lockAdminBtn").addEventListener("click", lockAdminMode);
+    document.getElementById("excelBtn").addEventListener("click", exportExcel);
+    document.getElementById("resetBtn").addEventListener("click", resetTracker);
+    document.getElementById("lockBtn").addEventListener("click", lockAdmin);
 
-    // Initialize
-    loadState();
-    renderUI();
+    render();
+    loadFromSheet(true);
+    setInterval(() => loadFromSheet(true), 20000);
   </script>
 </body>
 </html>
